@@ -315,14 +315,24 @@ class PlanningGraph():
         self.a_levels.append(set())
         for a in self.all_actions:
             a_act = PgNode_a(a)
-            a_act.show()
+            #a_act.show()
             #s_node = self.s_levels[level]
-            if a_act.prenodes.issubset(self.s_levels[level]):
-                self.a_levels[level].add(a_act)
-                for sn in self.s_levels[level]:
-                    if sn in a_act.prenodes:
-                        a_act.parents.add(sn)
 
+            #ptest = a_act.prenodes
+
+            if a_act.prenodes.issubset(self.s_levels[level]):
+                #self.a_levels[level].add(a_act)
+                for sn in a_act.prenodes:
+                    #if sn in a_act.prenodes:
+                    a_act.parents.add(sn)
+                    sn.children.add(a_act)
+                    #print("sn")
+                    #sn.show()
+
+
+                self.a_levels[level].add(a_act)
+
+            #a_act.show()
 
                 #a_act.parents.add(s_node)
                 #s_node.children.add(a_act)
@@ -347,6 +357,20 @@ class PlanningGraph():
         #   may be "added" to the set without fear of duplication.  However, it is important to then correctly create and connect
         #   all of the new S nodes as children of all the A nodes that could produce them, and likewise add the A nodes to the
         #   parent sets of the S nodes
+
+        self.s_levels.append(set())
+        for a_act in self.a_levels[level-1]:
+            new_slist = a_act.effnodes
+            for new_s in new_slist:
+                a_act.children.add(new_s)
+                new_s.parents.add(a_act)
+                self.s_levels[level].add(new_s)
+
+        #for s_node in self.s_levels[level]:
+
+
+
+
 
     def update_a_mutex(self, nodeset):
         ''' Determine and update sibling mutual exclusion for A-level nodes
@@ -405,7 +429,11 @@ class PlanningGraph():
         :return: bool
         '''
         # TODO test for Inconsistent Effects between nodes
-        return False
+
+        if (node_a1.action in node_a2.action.effect_rem):
+            return False
+        else:
+            return True
 
     def interference_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
         '''
