@@ -189,6 +189,9 @@ class AirCargoProblem(Problem):
 
     def h_1(self, node: Node):
         # note that this is not a true heuristic
+
+        print(node.state)
+
         h_const = 1
         return h_const
 
@@ -212,8 +215,34 @@ class AirCargoProblem(Problem):
         executed.
         '''
         # TODO implement (see Russell-Norvig Ed-3 10.2.3  or Russell-Norvig Ed-2 11.2)
+
+
+        #  according to comments/notes in forum, check to see how many goals are fulfilled at this node.
+        #   number of unfulfilled goals is minimum number of steps required to reach all goals
+        #   this in effect should be the result of h_ignore_preconditions
+        #   assumption is that only 1 step can be implemented at any one time (which is the case for this project)
+
+        #  can access the goal list from aimacode.search, Problem
+        #   self.goal is actually list of goals
+        goallist = self.goal
+
+        #  create a list of the current true/false and get the state map (which is a list) at this node
+        currentstatelist = list(node.state)
+        currentstatemap = self.state_map
+
+
+        #  create a dictionary, which can then be compared with the goals
+        statedict = dict(zip(currentstatemap, currentstatelist))
+
         count = 0
 
+        #  for each of the goal, compare against the dictionary
+        for testgoal in goallist:
+            for key, val in statedict.items():
+                if (testgoal == key) and val == 'F':
+            #if testgoal not in currentstatelist:
+                    count += 1
+                    break
 
         return count
 
@@ -257,21 +286,26 @@ def air_cargo_p2() -> AirCargoProblem:
            expr('At(P3, ATL)'),    
            ]
     neg = [expr('At(C2, SFO)'),
+           expr('At(C2, ATL)'),
            expr('In(C2, P1)'),
            expr('In(C2, P2)'),
            expr('In(C2, P3)'),    
            expr('At(C1, JFK)'),
+           expr('At(C1, ATL)'),
            expr('In(C1, P1)'),
            expr('In(C1, P2)'),
            expr('In(C1, P3)'),    
            expr('At(C3, SFO)'),
+           expr('At(C3, JFK)'),
            expr('In(C3, P1)'),
            expr('In(C3, P2)'),
            expr('In(C3, P3)'),    
            expr('At(P1, JFK)'),
+           expr('At(P1, ATL)'),
            expr('At(P2, SFO)'),
+           expr('At(P2, ATL)'),
            expr('At(P3, SFO)'),
-               
+           expr('At(P3, JFK)'),
            ]
 
     init = FluentState(pos, neg)
@@ -299,15 +333,23 @@ def air_cargo_p3() -> AirCargoProblem:
 
            ]
     neg = [expr('At(C2, SFO)'),
+           expr('At(C2, ATL)'),
+           expr('At(C2, ORD)'),
            expr('In(C2, P1)'),
            expr('In(C2, P2)'),
            expr('At(C1, JFK)'),
+           expr('At(C1, ATL)'),
+           expr('At(C1, ORD)'),
            expr('In(C1, P1)'),
            expr('In(C1, P2)'),
+           expr('At(C3, SFO)'),
            expr('At(C3, JFK)'),
+           expr('At(C3, ORD)'),
            expr('In(C3, P1)'),
            expr('In(C3, P2)'),
            expr('At(C4, SFO)'),
+           expr('At(C4, JFK)'),
+           expr('At(C4, ATL)'),
            expr('In(C4, P1)'),
            expr('In(C4, P2)'),
            expr('At(P1, JFK)'),

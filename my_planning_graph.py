@@ -520,6 +520,9 @@ class PlanningGraph():
         #     if a2_pren in node_a1.action.precond_pos:
         #         return True
 
+
+        # for the unittest, can't use precond, as test nodes have no preconditions
+        #   so have to rely on the mutexify and is_mutex
         for a1_parent in node_a1.parents:
             for a2_parent in node_a2.parents:
                 if a1_parent.is_mutex(a2_parent):
@@ -559,7 +562,16 @@ class PlanningGraph():
         :param node_s2: PgNode_s
         :return: bool
         '''
-        # TODO test for negation between nodes
+        # test for negation between nodes
+
+        # if isinstance(node_s1, node_s2.__class__):
+        #     return (self.symbol == other.symbol) \
+        #            and (self.is_pos != other.is_pos)
+
+        #  rely on the PgNode_s object have .symbol & .is_pos
+        if (node_s1.symbol == node_s2.symbol) and (node_s1.is_pos != node_s2.is_pos):
+            return True
+
         return False
 
     def inconsistent_support_mutex(self, node_s1: PgNode_s, node_s2: PgNode_s):
@@ -578,7 +590,17 @@ class PlanningGraph():
         :param node_s2: PgNode_s
         :return: bool
         '''
-        # TODO test for Inconsistent Support between nodes
+        # test for Inconsistent Support between nodes
+
+        for s1_parent in node_s1.parents:
+            for s2_parent in node_s2.parents:
+                if s1_parent == (s2_parent):
+                    return False
+
+        for s1_parent in node_s1.parents:
+            for s2_parent in node_s2.parents:
+                if s1_parent.is_mutex(s2_parent):
+                    return True
         return False
 
     def h_levelsum(self) -> int:
@@ -589,4 +611,24 @@ class PlanningGraph():
         level_sum = 0
         # TODO implement
         # for each goal in the problem, determine the level cost, then add them together
+
+        #  start with level_sum at zero
+        level_sum = 0
+
+        testgoal_list = self.problem.goal
+
+        for testgoal in testgoal_list:
+
+            goalfound = False
+            for slev in range(len(self.s_levels)):
+                for snode in self.s_levels[slev]:
+                    if testgoal.__eq__(snode.literal):
+                        goalfound = True
+                        level_sum += slev
+                        #print("a")
+                        break
+                if goalfound == True:
+                    break
+
+
         return level_sum
