@@ -428,12 +428,25 @@ class PlanningGraph():
         :param node_a2: PgNode_a
         :return: bool
         '''
-        # TODO test for Inconsistent Effects between nodes
+        # test for Inconsistent Effects between nodes
+        #  inconistent is when one of the effects is the negative of another effect
+        #  uses the Action class in planning.py to get the effects and compare
+        #   else would have to go to child S node, then look at child S node's effects etc
+        #  compared both ways, not sure if both ways is necessary
+        for a1_effect in node_a1.action.effect_add:
+            if a1_effect in node_a2.action.effect_rem:
+                return True
+        for a2_effect in node_a2.action.effect_add:
+            if a2_effect in node_a1.action.effect_rem:
+                return True
 
-        if (node_a1.action in node_a2.action.effect_rem):
-            return False
-        else:
-            return True
+        return False
+
+
+        # if (node_a1.action in node_a2.action.effect_add):
+        #     return False
+        # else:
+        #     return True
 
     def interference_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
         '''
@@ -449,7 +462,28 @@ class PlanningGraph():
         :param node_a2: PgNode_a
         :return: bool
         '''
-        # TODO test for Interference between nodes
+        # test for Interference between nodes
+        #  interference is when one of effects is negative of precondition of another
+        #  assuming more likely that positive of precondition is more likely, so will
+        #   use check of negative effect to positive precondition
+        #  uses the Action class in planning.py to get the effect and precondition to compare
+        #   else would have to go to child S node, then look at child S node's effects etc
+        #  compared both ways, not sure if both ways are necessary
+
+        for a1_effectn in node_a1.action.effect_rem:
+            if a1_effectn in node_a2.action.precond_pos:
+                return True
+        for a2_effectn in node_a2.action.effect_rem:
+            if a2_effectn in node_a1.action.precond_pos:
+                return True
+
+        # for a1_effect in node_a1.action.effect_add:
+        #     if a1_effect in node_a2.action.precond_neg:
+        #         return True
+        # for a2_effect in node_a2.action.effect_add:
+        #     if a2_effect in node_a1.action.precond_neg:
+        #         return True
+
         return False
 
     def competing_needs_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
@@ -464,6 +498,33 @@ class PlanningGraph():
         '''
 
         # TODO test for Competing Needs between nodes
+        #  competing is when one of precondition is negative of precondition of another
+        #  uses the Action class in planning.py to get the effect and precondition to compare
+        #   else would have to go to parent S node, then look at parent S node's effects etc
+        #  compared both ways, not sure if both ways are necessary
+
+        a1_act = node_a1.action
+        a2_act = node_a2.action
+
+        # for a1_pre in node_a1.action.precond_pos:
+        #     if a1_pre in node_a2.action.precond_neg:
+        #         return True
+        # for a2_pre in node_a2.action.precond_pos:
+        #     if a2_pre in node_a1.action.precond_neg:
+        #         return True
+        #
+        # for a1_pren in node_a1.action.precond_neg:
+        #     if a1_pren in node_a2.action.precond_pos:
+        #         return True
+        # for a2_pren in node_a2.action.precond_neg:
+        #     if a2_pren in node_a1.action.precond_pos:
+        #         return True
+
+        for a1_parent in node_a1.parents:
+            for a2_parent in node_a2.parents:
+                if a1_parent.is_mutex(a2_parent):
+                    return True
+
         return False
 
     def update_s_mutex(self, nodeset: set):
