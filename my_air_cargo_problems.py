@@ -126,7 +126,7 @@ class AirCargoProblem(Problem):
             e.g. 'FTTTFF'
         :return: list of Action objects
         """
-        # try a copy of the actions as in example_have_cake.py
+        # based on actions as in example_have_cake.py
         possible_actions = []
 
         kb = PropKB()
@@ -189,6 +189,7 @@ class AirCargoProblem(Problem):
 
     def h_1(self, node: Node):
         # note that this is not a true heuristic
+        #  this was not changed/modified for purposes of Project 3
 
         print(node.state)
 
@@ -215,7 +216,6 @@ class AirCargoProblem(Problem):
         executed.
         '''
         # TODO implement (see Russell-Norvig Ed-3 10.2.3  or Russell-Norvig Ed-2 11.2)
-
 
         #  according to comments/notes in forum, check to see how many goals are fulfilled at this node.
         #   number of unfulfilled goals is minimum number of steps required to reach all goals

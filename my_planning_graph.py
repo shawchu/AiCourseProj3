@@ -312,31 +312,22 @@ class PlanningGraph():
         #   to see if a proposed PgNode_a has prenodes that are a subset of the previous S level.  Once an
         #   action node is added, it MUST be connected to the S node instances in the appropriate s_level set.
 
+        #  first have to create blank list of a_levels
         self.a_levels.append(set())
         for a in self.all_actions:
             a_act = PgNode_a(a)
-            #a_act.show()
-            #s_node = self.s_levels[level]
 
-            #ptest = a_act.prenodes
-
+            #  use the already existing issubset function to check if proposed new action node is possible 
+            #   from corresponding s node 
             if a_act.prenodes.issubset(self.s_levels[level]):
-                #self.a_levels[level].add(a_act)
+                #  use parents & children to connect the s node and action
+                #   only realised later that there is a muxtefy function....
                 for sn in a_act.prenodes:
-                    #if sn in a_act.prenodes:
                     a_act.parents.add(sn)
                     sn.children.add(a_act)
-                    #print("sn")
-                    #sn.show()
 
-
+                # add the a action after the connections are made
                 self.a_levels[level].add(a_act)
-
-            #a_act.show()
-
-                #a_act.parents.add(s_node)
-                #s_node.children.add(a_act)
-
 
 
 
@@ -358,17 +349,15 @@ class PlanningGraph():
         #   all of the new S nodes as children of all the A nodes that could produce them, and likewise add the A nodes to the
         #   parent sets of the S nodes
 
+        #  first have to create blank list of s_levels at that level
         self.s_levels.append(set())
         for a_act in self.a_levels[level-1]:
+            #  use the effnodes property which already exists whenever PgNode_a was created
             new_slist = a_act.effnodes
             for new_s in new_slist:
                 a_act.children.add(new_s)
                 new_s.parents.add(a_act)
                 self.s_levels[level].add(new_s)
-
-        #for s_node in self.s_levels[level]:
-
-
 
 
 
@@ -443,11 +432,6 @@ class PlanningGraph():
         return False
 
 
-        # if (node_a1.action in node_a2.action.effect_add):
-        #     return False
-        # else:
-        #     return True
-
     def interference_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
         '''
         Test a pair of actions for mutual exclusion, returning True if the 
@@ -477,6 +461,9 @@ class PlanningGraph():
             if a2_effectn in node_a1.action.precond_pos:
                 return True
 
+        #  following code was checking against negative precondition
+        #   comment out for now, and use above for now
+        
         # for a1_effect in node_a1.action.effect_add:
         #     if a1_effect in node_a2.action.precond_neg:
         #         return True
@@ -497,7 +484,7 @@ class PlanningGraph():
         :return: bool
         '''
 
-        # TODO test for Competing Needs between nodes
+        #  test for Competing Needs between nodes
         #  competing is when one of precondition is negative of precondition of another
         #  uses the Action class in planning.py to get the effect and precondition to compare
         #   else would have to go to parent S node, then look at parent S node's effects etc
@@ -505,6 +492,11 @@ class PlanningGraph():
 
         a1_act = node_a1.action
         a2_act = node_a2.action
+
+        #  below code was attempt to use the precond_pos & precond_neg
+        #   kept on failing unit test at around line 70 of test_my_planning_graph.py
+        #   as unittest was using object with no parent or child, but unittest was 
+        #   using mutexify function
 
         # for a1_pre in node_a1.action.precond_pos:
         #     if a1_pre in node_a2.action.precond_neg:
@@ -564,10 +556,6 @@ class PlanningGraph():
         '''
         # test for negation between nodes
 
-        # if isinstance(node_s1, node_s2.__class__):
-        #     return (self.symbol == other.symbol) \
-        #            and (self.is_pos != other.is_pos)
-
         #  rely on the PgNode_s object have .symbol & .is_pos
         if (node_s1.symbol == node_s2.symbol) and (node_s1.is_pos != node_s2.is_pos):
             return True
@@ -617,18 +605,19 @@ class PlanningGraph():
 
         testgoal_list = self.problem.goal
 
+        #  for each of the goal, have to test when first met
         for testgoal in testgoal_list:
-
+            #  use goalfound as flag when goal is found
             goalfound = False
             for slev in range(len(self.s_levels)):
                 for snode in self.s_levels[slev]:
                     if testgoal.__eq__(snode.literal):
                         goalfound = True
                         level_sum += slev
-                        #print("a")
+                        #  use break to break out of for loop when goal is found
                         break
+                #  don't want to keep on going onto next s level when goal is found
                 if goalfound == True:
                     break
-
 
         return level_sum
